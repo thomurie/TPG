@@ -1,14 +1,5 @@
 defmodule TPGTest do
   use ExUnit.Case
-  # doctest TPG
-
-  @mock_api_response
-
-  @urls [
-    "https://www.metaweather.com/api/location/2487610/",
-    "https://www.metaweather.com/api/location/2442047/",
-    "https://www.metaweather.com/api/location/2366355/"
-  ]
 
   test "makes concurrent get request, returns [responses]" do
     assert is_list(TPG.call_apis_async()) === true
