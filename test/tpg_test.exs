@@ -30,7 +30,7 @@ defmodule TPGTest do
     assert TPG.get_temp(test_weather) === 32.0
   end
 
-  test "converts centigratde to Farenhiet" do
+  test "converts centigrade to Farenhiet" do
     assert TPG.c_to_f(0) === 32.0
   end
 
