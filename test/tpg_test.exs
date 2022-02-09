@@ -39,6 +39,8 @@ defmodule TPGTest do
   end
 
   test "makes api calls, cleans data, displays phrase" do
-    assert is_binary(TPG.call_and_print()) === true
+    response_statement = TPG.call_and_print()
+    IO.puts response_statement
+    assert is_binary(response_statement) === true
   end
 end
