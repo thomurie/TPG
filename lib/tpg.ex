@@ -1,16 +1,15 @@
 defmodule TPG do
   @moduledoc """
-  Documentation for `TPG`.
-  """
+  Doumentation for TPG
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> TPG.avg_max([1, 2, 3, 4, 5, 6])
-      3.5
-
+  Takes a list of urls,
+  Concurrently makes GET requests to all urls,
+  A list of the responses is created,
+  JSON responses in list are validated,
+  JSON responses in list are converted to map,
+  The list is iterated through,
+  The requested data is collected,
+  The requested data is printed to the console.
   """
   @urls [
     "https://www.metaweather.com/api/location/2487610/",
@@ -18,15 +17,27 @@ defmodule TPG do
     "https://www.metaweather.com/api/location/2366355/"
   ]
 
-  # @locations %{
-  #   slc: %{name: "Salt Lake City", meta_weather_id: "2487610", avg_max_temp: 0},
-  #   lax: %{name: "Los Angeles", meta_weather_id: "2442047", avg_max_temp: 0},
-  #   boi: %{name: "Boise", meta_weather_id: "2366355", avg_max_temp: 0}
-  # }
+  # concurrentAPICalls calls apis concurrently, puts results into an array
+  # TODO error handling
+  @doc """
+  Hello world.
+
+  """
+  def call_apis_async() do
+    @urls
+    |> Task.async_stream(&HTTPoison.get/1)
+    |> Enum.into([], fn {:ok, res} -> res end)
+  end
 
   #  validate successful response
   #  TODO improve error handling
+  @doc """
+  Hello world.
+
+  """
   def validate_api_calls(response) do
+    # IO.inspect is_list(response)
+    # IO.inspect response
     case response do
       {:ok, %HTTPoison.Response{status_code: 200, body: body}} ->
         Poison.decode!(body)
@@ -37,29 +48,55 @@ defmodule TPG do
     end
   end
 
-  # concurrentAPICalls calls apis concurrently, puts results into an array
-  # TODO error handling
-  def call_apis_async() do
-    @urls
-    |> Task.async_stream(&HTTPoison.get/1)
-    |> Enum.into([], fn {:ok, res} -> res end)
-    |> Enum.map(&validate_api_calls(&1))
-    |> Enum.map(&process_response_data(&1))
-    |> display_max_temps
-  end
-
   # create array of max temperatures, add the temperatures to the map
+  @doc """
+  Hello world.
+
+  """
   def process_response_data(location_data) do
-    avg_max_temp = Map.get(location_data, "consolidated_weather") |> Enum.map(&get_temp(&1)) |> avg_max
+    avg_max_temp = Map.get(location_data, "consolidated_weather") |> Enum.map(&get_temp(&1)) |> avg_val
     location = Map.get(location_data, "title")
     {:ok, location, avg_max_temp}
   end
 
+  @doc """
+  Hello world.
+
+  """
   def get_temp(weather_map) do
     Map.get(weather_map, "max_temp")
     |> c_to_f
   end
 
+  # centigrade to farenhiet
+  @doc """
+  Hello world.
+
+  """
+  def c_to_f(c), do: ((c * 9) / 5) + 32
+
+  @doc """
+  Hello world.
+
+  """
+  def avg_val(lst) do
+    lst
+    |> Enum.sum()
+    |> divide(length(lst))
+  end
+
+  # find avg max temp
+  @doc """
+  Hello world.
+
+  """
+  def divide(a, b \\ 1), do: Kernel.trunc((a / b) * 100) / 100
+
+  # creates a statement from the weather data
+  @doc """
+  Hello world.
+
+  """
   def display_max_temps(locations_list \\ [], statement \\ "")
 
   def display_max_temps([], statement), do: statement
@@ -72,73 +109,14 @@ defmodule TPG do
     display_max_temps(tail, new_statement)
   end
 
-  # def return_max_temps(locations_list \\ [], statement \\ "")
+  @doc """
+  Hello world.
 
-  # def return_max_temps([], statement), do: statement
-
-  # def return_max_temps(locations, statement) when is_map(locations) do
-  #   locations
-  #   |>Map.to_list
-  #   |>return_max_temps
-  # end
-
-  # def return_max_temps(locations, statement) do
-  #   [ head | tail ] = locations
-  #   {name , data} = head
-
-  #   name = Map.get(data, :name)
-  #   temp = Map.get(data, :avg_max_temp)
-  #   phrase = "#{name} Average Max Temp: #{temp}\n"
-  #   new_statement = statement <> phrase
-  #   return_max_temps(tail, new_statement)
-  # end
-
-  # #   update map locations array
-  # def update_nested_map(parent_map, child_key, target_key, updated_value) do
-  #   child_map = Map.get(parent_map, child_key)
-  #   updated_child_map = Map.put(child_map, target_key, updated_value)
-  #   Map.put(parent_map, child_key, updated_child_map)
-  # end
-
-  # centigrade to farenhiet
-  def c_to_f(c), do: ((c * 9) / 5) + 32
-
-  # find avg max temp
-  defp divide(a, b \\ 1), do: Kernel.trunc((a / b) * 100) / 100
-
-  def avg_val(lst \\ []) do
-    lst
-    |> Enum.sum()
-    |> divide(length(lst))
+  """
+  def call_and_print() do
+    call_apis_async
+    |> Enum.map(&validate_api_calls(&1))
+    |> Enum.map(&process_response_data(&1))
+    |> display_max_temps
   end
-
-  # # for each url print #{location_name} Average Max Temp: #{avg_max_temp}
-  # def return_max_temps(locations_list \\ [], statement \\ "")
-
-  # def return_max_temps([], statement), do: statement
-
-  # def return_max_temps(locations, statement) when is_map(locations) do
-  #   locations
-  #   |>Map.to_list
-  #   |>return_max_temps
-  # end
-
-  # def return_max_temps(locations, statement) do
-  #   [ head | tail ] = locations
-  #   {name , data} = head
-
-  #   name = Map.get(data, :name)
-  #   temp = Map.get(data, :avg_max_temp)
-  #   phrase = "#{name} Average Max Temp: #{temp}\n"
-  #   new_statement = statement <> phrase
-  #   return_max_temps(tail, new_statement)
-  # end
-
-  # Put it all together
-  def get_url_max_temps(locations) do
-    locations
-    |> return_max_temps
-    |> IO.inspect
-  end
-
 end
